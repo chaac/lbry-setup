@@ -71,6 +71,12 @@ printf "\n\nInstalling/updating lbry-console\n";
 if UpdateSource lbry || [ ! -d $ROOT/lbry/dist ]; then
 	printf "Running lbry-console setup\n"
 	cd lbry
+    if [ -d dist ]; then
+        if [ `stat -c "%U" dist` = "root" ]; then
+            sudo rm -rf dist build ez_setup.pyc lbrynet.egg-info setuptools-4.0.1-py2.7.egg setuptools-4.0.1.zip
+        fi
+    fi
+    python setup.py build bdist_egg
 	sudo python setup.py install
 	cd ..
 else
