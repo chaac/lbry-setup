@@ -7,7 +7,16 @@ ROOT=.
 GIT_URL_ROOT="https://github.com/lbryio/"
 CONF_DIR=~/.lbrycrd
 CONF_PATH=$CONF_DIR/lbrycrd.conf
-PACKAGES="build-essential libtool autotools-dev autoconf git pkg-config libssl-dev libboost-all-dev libdb-dev libdb++-dev libqt4-dev libprotobuf-dev protobuf-compiler libgmp3-dev build-essential python-dev python-pip python-virtualenv"
+PACKAGES="build-essential libtool autotools-dev autoconf git pkg-config libssl-dev libboost-all-dev libqt4-dev libprotobuf-dev protobuf-compiler libgmp3-dev build-essential python-dev python-pip python-virtualenv"
+HAVE_BDB48=`dpkg-query -W -f='${STATUS}' libdb4.8++ 2>/dev/null`
+if [ -n "$HAVE_BDB48" ]
+then
+    WITHINCOMPATIBLEBDB=""
+    PACKAGES="$PACKAGES libdb4.8 libdb4.8-dev libdb4.8++ libdb4.8++-dev"
+else
+    WITHINCOMPATIBLEBDB="--with-incompatible-bdb"
+    PACKAGES="$PACKAGES libdb libdb-dev libdb++ libdb++-dev"
+fi
 
 #install/update requirements
 if hash apt-get 2>/dev/null; then
@@ -42,13 +51,14 @@ UpdateSource()
 		git remote update;
 		LOCAL=$(git rev-parse @{0})
 		REMOTE=$(git rev-parse @{u})
-		cd ..
 		if [ $LOCAL = $REMOTE ]; then
 			printf "No changes to $1 source\n"
+            cd ..
 			return 1 
 		else
 			printf "Fetching source changes to $1\n"
 			git pull --rebase
+            cd ..
 			return 0
 		fi
 	fi
@@ -59,13 +69,17 @@ printf "\n\nInstalling/updating lbrycrd\n";
 if UpdateSource lbrycrd || [ ! -f $ROOT/lbrycrd/src/qt/lbrycrd-qt ]; then
 	cd lbrycrd
 	./autogen.sh
-	./configure --with-incompatible-bdb
+	./configure $WITHINCOMPATIBLEBDB
 	make
+    echo `pwd`/src/lbrycrdd > ~/.lbrycrddpath.conf
         cd ..
 else
 	printf "lbrycrd installed and nothing to update\n"
 fi
 
+if [ ! -e ~/.lbrycrddpath.conf ]; then
+    echo `pwd`/lbrycrd/src/lbrycrdd > ~/.lbrycrddpath.conf
+fi
 #setup lbry-console
 printf "\n\nInstalling/updating lbry-console\n";
 if UpdateSource lbry || [ ! -d $ROOT/lbry/dist ]; then
