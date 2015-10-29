@@ -1,6 +1,6 @@
 Mac OS X Build Instructions and Notes
 ====================================
-This guide will show you how to build lbrycrd for OSX.
+This guide will show you how to build lbry for OSX.
 
 Notes
 -----
@@ -12,6 +12,8 @@ built-in one is located in `/Applications/Utilities`.
 
 Preparation
 -----------
+
+If you're running El Capitan, you may need to disable rootless mode. To do so follow the instructions [here](https://www.quora.com/How-do-I-turn-off-the-rootless-in-OS-X-El-Capitan-10-11)
 
 You need to install XCode with all the options checked so that the compiler
 and everything is available in /usr not just /Developer. XCode should be
